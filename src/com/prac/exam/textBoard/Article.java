@@ -1,3 +1,5 @@
+package com.prac.exam.textBoard;
+
 public class Article {
   public int id;
   public String title;

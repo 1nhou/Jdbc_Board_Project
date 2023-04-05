@@ -1,3 +1,5 @@
+package com.prac.exam.textBoard;
+
 import java.util.Scanner;
 
 public class Container {
