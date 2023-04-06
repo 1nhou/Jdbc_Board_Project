@@ -6,17 +6,8 @@ import com.prac.exam.textBoard.util.SecSql;
 import java.sql.Connection;
 import java.util.Scanner;
 
-public class MemberController {
-  private Connection conn;
-  private Scanner sc;
+public class MemberController extends Controller{
 
-  public void setConn(Connection conn) {
-    this.conn = conn;
-  }
-
-  public void setScanner(Scanner sc) {
-    this.sc = sc;
-  }
   public void join(String cmd) {
     if (cmd.equals("member join")) {
       String loginId;
