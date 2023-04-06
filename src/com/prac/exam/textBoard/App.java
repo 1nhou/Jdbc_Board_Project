@@ -74,7 +74,34 @@ public class App {
       System.out.printf("%d번 게시물이 생성 되었습니다.\n", id);
 
     }
-    else if (cmd.startsWith("modify ")) {
+    else if (cmd.equals("list")) {
+      PreparedStatement pstat = null;
+      ResultSet rs = null;
+
+      List<Article> articles = new ArrayList<>();
+
+      SecSql sql = new SecSql();
+      sql.append("SELECT *");
+      sql.append("FROM article");
+      sql.append("ORDER BY id DESC");
+
+      List<Map<String, Object>> articleListMap = DBUtil.selectRows(conn, sql);
+
+      for(Map<String, Object> articleMap : articleListMap) {
+        articles.add(new Article(articleMap));
+      }
+
+      if (articles.isEmpty()) {
+        System.out.println("게시물이 존재하지 않습니다.");
+        return 0;
+      }
+      System.out.println("== 게시물 리스트 ==");
+      System.out.println("번호 / 제목");
+      for (Article article : articles) {
+        System.out.printf("%d / %s\n", article.id, article.title);
+      }
+    }
+      else if (cmd.startsWith("modify ")) {
       int id = Integer.parseInt(cmd.split(" ")[1]);
 
       System.out.printf("== %d번 게시물 수정 ==\n", id);
@@ -93,34 +120,30 @@ public class App {
       DBUtil.update(conn, sql);
       System.out.printf("%d 번 게시글이 수정되었습니다.\n", id);
     }
-      else if (cmd.equals("list")) {
-      PreparedStatement pstat = null;
-      ResultSet rs = null;
-
-      List<Article> articles = new ArrayList<>();
+      else if (cmd.startsWith("delete ")) {
+      int id = Integer.parseInt(cmd.split(" ")[1]);
 
       SecSql sql = new SecSql();
-      sql.append("SELECT *");
+      sql.append("SELECT COUNT(*) AS cnt");
       sql.append("FROM article");
-      sql.append("ORDER BY id DESC");
+      sql.append("WHERE id = ?", id);
 
-      List<Map<String, Object>> articleListMap = DBUtil.selectRows(conn, sql);
+      int articleCount = DBUtil.selectRowIntValue(conn,sql);
 
-      for(Map<String, Object> articleMap : articleListMap) {
-        articles.add(new Article(articleMap));
+      if(articleCount == 0){
+        System.out.printf("%d번 게시글은 존재하지 않습니다.\n", id);
+        return 0;
       }
 
+      sql = new SecSql();
+      sql.append("DELETE FROM article");
+      sql.append("WHERE id = ?", id);
 
-      if (articles.isEmpty()) {
-        System.out.println("게시물이 존재하지 않습니다.");
-        return -1;
-      }
-      System.out.println("== 게시물 리스트 ==");
-      System.out.println("번호 / 제목");
-      for (Article article : articles) {
-        System.out.printf("%d / %s\n", article.id, article.title);
-      }
-    } else if (cmd.equals("exit")) {
+      DBUtil.delete(conn,sql);
+
+      System.out.printf("%d 번 게시글이 삭제되었습니다.\n", id);
+    }
+      else if (cmd.equals("exit")) {
       System.out.println("시스템 종료");
       System.exit(0);
     } else {
