@@ -1,5 +1,6 @@
 package com.prac.exam.textBoard.Controller;
 
+import com.prac.exam.textBoard.service.MemberService;
 import com.prac.exam.textBoard.util.DBUtil;
 import com.prac.exam.textBoard.util.SecSql;
 
@@ -7,6 +8,13 @@ import java.sql.Connection;
 import java.util.Scanner;
 
 public class MemberController extends Controller{
+
+  private MemberService memberService;
+
+  public MemberController(Connection conn, Scanner sc) {
+    super(sc);
+    memberService = new MemberService(conn);
+  }
 
   public void join(String cmd) {
     if (cmd.equals("member join")) {
@@ -30,15 +38,10 @@ public class MemberController extends Controller{
         }
 
         // 로그인 아이디 검증
-        SecSql sql = new SecSql();
 
-        sql.append("SELECT COUNT(*) > 0");
-        sql.append("FROM `member`");
-        sql.append("WHERE loginId = ?", loginId);
+        boolean isLoginedDup = memberService.isLoginedDup(loginId);
 
-        boolean loginedDup = DBUtil.selectRowBooleanValue(conn, sql);
-
-        if(loginedDup) {
+        if(isLoginedDup) {
           System.out.printf("%s(은)는 이미 사용중인 아이디 입니다.\n", loginId);
           continue;
         }
@@ -92,15 +95,9 @@ public class MemberController extends Controller{
         break;
       }
 
-      SecSql sql = new SecSql();
-      sql.append("INSERT INTO `member`");
-      sql.append("SET regDate = NOW()");
-      sql.append(", updateDate = NOW()");
-      sql.append(", loginId = ?", loginId);
-      sql.append(", loginPw = ?", loginPw);
-      sql.append(", name = ?", name);
+      int id = memberService.join(loginId, loginPw, name);
 
-      int id = DBUtil.insert(conn, sql);
+
       System.out.printf("%d번 회원이 생성 되었습니다.\n", id);
     }
 
